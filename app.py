@@ -1,6 +1,8 @@
 """
 FastAPI Server for AI Fruit Freshness Detection System (FreshVision AI)
 Group 7 College Project — SCET
+Dual-mode: Uses high-performance lightweight ONNX Runtime for serverless Vercel deployment
+and falls back to PyTorch if ONNX is not available.
 """
 
 import os
@@ -8,16 +10,47 @@ import io
 import base64
 import json
 import numpy as np
-import torch
-import torch.nn.functional as F
 from PIL import Image
 from fastapi import FastAPI, File, UploadFile, Request, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from model import FruitFreshnessClassifier, GradCAM, overlay_heatmap_on_image, PREPROCESS_TRANSFORMS, CLASSES, CLASS_KEYS
-from sample_data import generate_all_samples
+# Class definitions
+CLASSES = [
+    "Fresh Apple",
+    "Fresh Banana",
+    "Fresh Orange",
+    "Rotten Apple",
+    "Rotten Banana",
+    "Rotten Orange"
+]
+
+CLASS_KEYS = [
+    "freshapples",
+    "freshbanana",
+    "freshoranges",
+    "rottenapples",
+    "rottenbanana",
+    "rottenoranges"
+]
+
+# Check runtime engine availability
+HAS_ONNX = False
+try:
+    import onnxruntime as ort
+    HAS_ONNX = True
+except ImportError:
+    pass
+
+HAS_TORCH = False
+try:
+    import torch
+    import torch.nn.functional as F
+    from model import FruitFreshnessClassifier, GradCAM, PREPROCESS_TRANSFORMS
+    HAS_TORCH = True
+except ImportError:
+    pass
 
 app = FastAPI(title="FreshVision AI", description="Group 7 College Capstone Project")
 
@@ -26,6 +59,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 MODELS_DIR = os.path.join(BASE_DIR, "models")
+ONNX_MODEL_PATH = os.path.join(MODELS_DIR, "fruit_classifier.onnx")
 MODEL_PATH = os.path.join(MODELS_DIR, "best_model.pt")
 FALLBACK_MODEL_PATH = os.path.join(MODELS_DIR, "fruit_classifier.pt")
 METRICS_PATH = os.path.join(MODELS_DIR, "class_metrics.json")
@@ -38,49 +72,48 @@ os.makedirs(MODELS_DIR, exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
-# Device & Model Initialization
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = None
+# Engine instances
+onnx_session = None
+torch_model = None
 grad_cam = None
+device = None
 
 def init_system():
-    global model, grad_cam
+    global onnx_session, torch_model, grad_cam, device
     
-    # 1. Ensure sample benchmark images exist from real dataset
-    generate_all_samples(os.path.join(STATIC_DIR, "samples"))
-        
-    # 2. Load PyTorch model
-    model = FruitFreshnessClassifier(num_classes=6, pretrained=False).to(device)
-    chosen_path = MODEL_PATH if os.path.exists(MODEL_PATH) else FALLBACK_MODEL_PATH
-    
-    if os.path.exists(chosen_path):
+    # 1. Try ONNX Runtime first (ultra-fast, lightweight for Vercel)
+    if HAS_ONNX and os.path.exists(ONNX_MODEL_PATH):
         try:
-            model.load_state_dict(torch.load(chosen_path, map_location=device))
-            print(f"[+] Loaded model checkpoint from {chosen_path}")
+            opts = ort.SessionOptions()
+            opts.intra_op_num_threads = 2
+            onnx_session = ort.InferenceSession(ONNX_MODEL_PATH, opts)
+            print(f"[+] Loaded ONNX Runtime model from {ONNX_MODEL_PATH}")
+            return
         except Exception as e:
-            print(f"[!] Warning loading weights: {e}, using initialized model")
+            print(f"[!] Warning loading ONNX model: {e}")
+
+    # 2. Fall back to PyTorch if available
+    if HAS_TORCH:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        torch_model = FruitFreshnessClassifier(num_classes=6, pretrained=False).to(device)
+        chosen_path = MODEL_PATH if os.path.exists(MODEL_PATH) else FALLBACK_MODEL_PATH
+        
+        if os.path.exists(chosen_path):
+            try:
+                torch_model.load_state_dict(torch.load(chosen_path, map_location=device))
+                print(f"[+] Loaded PyTorch checkpoint from {chosen_path}")
+            except Exception as e:
+                print(f"[!] Warning loading weights: {e}, using default weights")
+        torch_model.eval()
+        target_conv_layer = torch_model.features[-1]
+        grad_cam = GradCAM(torch_model, target_conv_layer)
+        print("[+] PyTorch and Grad-CAM pipeline ready.")
     else:
-        print("[!] No checkpoint found. Initializing model with transfer learning backbone...")
-        # If no checkpoint exists, initialize with weights
-        model_init = FruitFreshnessClassifier(num_classes=6, pretrained=True).to(device)
-        torch.save(model_init.state_dict(), FALLBACK_MODEL_PATH)
-        model = model_init
+        print("[!] No active deep learning backend found.")
 
-    model.eval()
-    
-    # Attach Grad-CAM to the final convolutional layer of MobileNetV2 features
-    target_conv_layer = model.features[-1]
-    grad_cam = GradCAM(model, target_conv_layer)
-    print("[+] Model and Grad-CAM explainability pipeline ready.")
-
-# Initialize at startup
 init_system()
 
 def get_consumption_advice(fruit_type, is_fresh, confidence):
-    """
-    Scientifically sound visual condition interpretations adhering to academic guidelines.
-    Performs visual image classification only (no biochemical / pathogen guarantees).
-    """
     if is_fresh:
         if confidence > 0.80:
             return {
@@ -123,42 +156,91 @@ def pil_to_base64(pil_image):
     return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
 
+def overlay_heatmap_numpy(original_pil, heatmap, alpha=0.45):
+    """
+    Overlays 2D normalized heatmap [0, 1] over PIL image using pure NumPy Jet colormap.
+    Requires zero Matplotlib dependency.
+    """
+    heatmap_pil = Image.fromarray((heatmap * 255).astype(np.uint8)).resize(
+        original_pil.size, resample=Image.Resampling.BILINEAR
+    )
+    heatmap_np = np.array(heatmap_pil).astype(np.float32) / 255.0
+
+    # 256-color Jet colormap lookup table
+    x = np.linspace(0, 1, 256)
+    r = np.clip(1.5 - np.abs(4 * x - 3), 0, 1)
+    g = np.clip(1.5 - np.abs(4 * x - 2), 0, 1)
+    b = np.clip(1.5 - np.abs(4 * x - 1), 0, 1)
+    jet_lut = (np.stack([r, g, b], axis=1) * 255).astype(np.uint8)
+
+    indices = np.clip((heatmap_np * 255).astype(np.int32), 0, 255)
+    colored_heatmap = jet_lut[indices]
+
+    orig_np = np.array(original_pil.convert("RGB"))
+    blended = (1.0 - alpha) * orig_np + alpha * colored_heatmap
+    blended = np.clip(blended, 0, 255).astype(np.uint8)
+    return Image.fromarray(blended)
+
+
+def preprocess_pil_numpy(pil_img):
+    img_rgb = pil_img.convert("RGB").resize((224, 224))
+    img_np = np.array(img_rgb).astype(np.float32) / 255.0
+    mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
+    std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+    img_np = (img_np - mean) / std
+    img_np = np.transpose(img_np, (2, 0, 1))
+    return np.expand_dims(img_np, axis=0)
+
+
 def run_inference_on_pil(pil_img):
-    global model, grad_cam
-    
-    # Preprocess
+    global onnx_session, torch_model, grad_cam
     img_rgb = pil_img.convert("RGB")
-    tensor = PREPROCESS_TRANSFORMS(img_rgb).unsqueeze(0).to(device)
-    
-    # Generate Grad-CAM heatmap and logits
-    heatmap, outputs = grad_cam.generate_heatmap(tensor)
-    probs = F.softmax(outputs, dim=1).squeeze().cpu().detach().numpy()
-    
-    pred_class_idx = int(np.argmax(probs))
-    pred_class_name = CLASSES[pred_class_idx]
-    confidence = float(probs[pred_class_idx])
-    
+
+    # Path A: ONNX Runtime
+    if onnx_session is not None:
+        input_tensor = preprocess_pil_numpy(img_rgb)
+        logits, feats = onnx_session.run(None, {"input": input_tensor})
+        exp_logits = np.exp(logits[0] - np.max(logits[0]))
+        probs = exp_logits / np.sum(exp_logits)
+
+        pred_class_idx = int(np.argmax(probs))
+        pred_class_name = CLASSES[pred_class_idx]
+        confidence = float(probs[pred_class_idx])
+
+        # Generate spatial attention heatmap from feature maps
+        act = np.mean(np.maximum(feats[0], 0), axis=0)
+        max_act = np.max(act)
+        if max_act > 0:
+            act = act / max_act
+        overlay_img = overlay_heatmap_numpy(img_rgb, act, alpha=0.45)
+
+    # Path B: PyTorch
+    elif torch_model is not None:
+        tensor = PREPROCESS_TRANSFORMS(img_rgb).unsqueeze(0).to(device)
+        heatmap, outputs = grad_cam.generate_heatmap(tensor)
+        probs = F.softmax(outputs, dim=1).squeeze().cpu().detach().numpy()
+        pred_class_idx = int(np.argmax(probs))
+        pred_class_name = CLASSES[pred_class_idx]
+        confidence = float(probs[pred_class_idx])
+        overlay_img = overlay_heatmap_numpy(img_rgb, heatmap, alpha=0.45)
+    else:
+        raise RuntimeError("No model loaded.")
+
     # Fresh vs Rotten logic: classes 0, 1, 2 are Fresh; 3, 4, 5 are Rotten
     is_fresh = pred_class_idx < 3
     fruit_types = ["Apple", "Banana", "Orange", "Apple", "Banana", "Orange"]
     detected_fruit = fruit_types[pred_class_idx]
-    
-    # Grad-CAM heatmap overlay
-    overlay_img = overlay_heatmap_on_image(img_rgb, heatmap, colormap_name="jet", alpha=0.45)
-    
-    # Compute Class Distribution
+
     all_scores = [
         {"class_name": CLASSES[i], "score": round(float(probs[i]) * 100, 2)}
         for i in range(len(CLASSES))
     ]
     all_scores = sorted(all_scores, key=lambda x: x["score"], reverse=True)
-    
+
     advice = get_consumption_advice(detected_fruit, is_fresh, confidence)
-    
-    # Calculate Freshness Degradation Index (0-100%)
     fresh_prob = sum(probs[:3])
     freshness_index = round(float(fresh_prob) * 100, 1)
-    
+
     return {
         "success": True,
         "prediction": "FRESH" if is_fresh else "ROTTEN",
@@ -190,7 +272,6 @@ async def predict_fruit(file: UploadFile = File(...)):
         try:
             pil_img = Image.open(io.BytesIO(contents))
             pil_img.verify()
-            # Reopen after verify
             pil_img = Image.open(io.BytesIO(contents))
         except Exception:
             raise HTTPException(status_code=400, detail="Corrupted or unreadable image file. Please upload a valid image.")
@@ -217,14 +298,14 @@ async def predict_sample(sample_name: str):
         
     sample_file = os.path.join(STATIC_DIR, "samples", valid_samples[sample_name])
     if not os.path.exists(sample_file):
-        generate_all_samples(os.path.join(STATIC_DIR, "samples"))
+        raise HTTPException(status_code=404, detail="Sample image not found on disk.")
         
     try:
         pil_img = Image.open(sample_file)
         result = run_inference_on_pil(pil_img)
         return JSONResponse(content=result)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Unable to load sample image.")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Unable to load sample image: {str(e)}")
 
 
 @app.get("/api/metrics")
@@ -234,7 +315,7 @@ async def get_metrics():
             data = json.load(f)
             return JSONResponse(content=data)
     else:
-        raise HTTPException(status_code=404, detail="Metrics have not been generated yet. Please train the model.")
+        raise HTTPException(status_code=404, detail="Metrics have not been generated yet.")
 
 if __name__ == "__main__":
     import uvicorn
