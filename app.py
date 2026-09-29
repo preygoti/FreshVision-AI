@@ -15,6 +15,7 @@ from fastapi import FastAPI, File, UploadFile, Request, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.base import BaseHTTPMiddleware
 
 # Class definitions
 CLASSES = [
@@ -53,6 +54,22 @@ except ImportError:
     pass
 
 app = FastAPI(title="FreshVision AI", description="Group 7 College Capstone Project")
+
+
+class VercelRewriteMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        path = request.scope.get("path", "")
+        matched = request.headers.get("x-matched-path", "")
+        if matched and matched != "/api/index.py":
+            request.scope["path"] = matched
+        elif path in ("/api/index.py", "/api", "/api/"):
+            request.scope["path"] = "/"
+        elif path.startswith("/api/index.py/"):
+            request.scope["path"] = path[len("/api/index.py"):]
+        return await call_next(request)
+
+
+app.add_middleware(VercelRewriteMiddleware)
 
 def resolve_path(*path_parts: str) -> str:
     """Finds directory or file across cwd, script dir, parent dir, or /var/task."""
@@ -271,6 +288,9 @@ def run_inference_on_pil(pil_img):
 
 
 @app.get("/", response_class=HTMLResponse)
+@app.get("/index.html", response_class=HTMLResponse)
+@app.get("/api", response_class=HTMLResponse)
+@app.get("/api/index.py", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
