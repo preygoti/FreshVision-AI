@@ -98,6 +98,22 @@ python train.py --csv_path data/dataset.csv --epochs 3 --batch_size 64
 
 ---
 
+## 🌐 Live Deployment on Vercel
+
+FreshVision AI is configured with `vercel.json` and `api/index.py` for 1-click deployment on Vercel.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fpreygoti%2FFreshVision-AI)
+
+### Steps to Deploy to Vercel:
+1. Go to **[vercel.com/new](https://vercel.com/new)** and sign in with GitHub.
+2. Click **Import** next to **`preygoti/FreshVision-AI`**.
+3. In Project Settings, under **Environment Variables**, add:
+   - **Key:** `VERCEL_SUPPORT_LARGE_FUNCTIONS`
+   - **Value:** `1`
+4. Click **Deploy**. Vercel will automatically provision the serverless function and assign your live domain (e.g. `https://freshvision-ai.vercel.app` or `https://freshvision-ai-preygoti.vercel.app`).
+
+---
+
 ## 📂 Project Structure
 
 ```
