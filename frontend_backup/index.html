@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Fruit Freshness Detection | Group 7</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="brand">
+                <div class="brand-badge">GROUP 7</div>
+                <div class="brand-text">
+                    <h1>FruitFresh<span class="gradient-text">AI</span></h1>
+                    <p class="subtitle">Deep Learning & Explainable Computer Vision</p>
+                </div>
+            </div>
+            <nav class="nav-links">
+                <button class="nav-btn active" data-tab="scanner-tab">
+                    <span class="btn-icon">🔍</span> Live AI Scanner
+                </button>
+                <button class="nav-btn" data-tab="architecture-tab">
+                    <span class="btn-icon">🧠</span> CNN Architecture
+                </button>
+                <button class="nav-btn" data-tab="metrics-tab">
+                    <span class="btn-icon">📊</span> Evaluation & Metrics
+                </button>
+                <button class="nav-btn" data-tab="team-tab">
+                    <span class="btn-icon">👥</span> Team & Viva Guide
+                </button>
+            </nav>
+            <div class="status-indicator">
+                <span class="pulse-dot"></span>
+                <span>PyTorch 2.x • MobileNetV2 Active</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- TAB 1: LIVE SCANNER -->
+        <section id="scanner-tab" class="tab-pane active">
+            <div class="hero-strip">
+                <div class="hero-info">
+                    <h2>Fruit Freshness & Degradation Classifier</h2>
+                    <p>Upload or capture any fruit image to detect whether it is <strong>Fresh</strong> or <strong>Rotten</strong>, inspect <strong>Grad-CAM neural attention heatmaps</strong>, and get real-time shelf life advisories.</p>
+                </div>
+                <div class="quick-presets">
+                    <span class="preset-label">Quick Demo Presets:</span>
+                    <button class="preset-btn" onclick="testPreset('fresh_apple')">🍎 Fresh Apple</button>
+                    <button class="preset-btn" onclick="testPreset('rotten_apple')">🍏 Rotten Apple</button>
+                    <button class="preset-btn" onclick="testPreset('fresh_banana')">🍌 Fresh Banana</button>
+                    <button class="preset-btn" onclick="testPreset('rotten_banana')">🍌 Rotten Banana</button>
+                    <button class="preset-btn" onclick="testPreset('fresh_orange')">🍊 Fresh Orange</button>
+                    <button class="preset-btn" onclick="testPreset('rotten_orange')">🍊 Rotten Orange</button>
+                </div>
+            </div>
+
+            <div class="scanner-grid">
+                <!-- Left: Upload / Capture Card -->
+                <div class="card upload-card">
+                    <div class="card-header">
+                        <h3>Input Fruit Image</h3>
+                        <span class="badge">JPG / PNG / WEBP</span>
+                    </div>
+
+                    <!-- Drag & Drop Zone -->
+                    <div class="drop-zone" id="drop-zone">
+                        <input type="file" id="file-input" accept="image/*" style="display: none;">
+                        <div class="drop-content" id="drop-prompt">
+                            <div class="upload-icon">📸</div>
+                            <h4>Drag & Drop Image Here</h4>
+                            <p>or click to browse from computer</p>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">
+                                    Browse Files
+                                </button>
+                                <button class="btn btn-secondary" onclick="openCamera()">
+                                    📷 Live Camera
+                                </button>
+                            </div>
+                        </div>
+                        <div class="preview-container" id="preview-container" style="display: none;">
+                            <img id="image-preview" src="" alt="Selected Fruit">
+                            <button class="btn-clear" onclick="resetScanner()">✕ Remove</button>
+                        </div>
+                    </div>
+
+                    <!-- Live Camera Feed (Hidden initially) -->
+                    <div id="camera-box" class="camera-box" style="display: none;">
+                        <video id="webcam" autoplay playsinline></video>
+                        <canvas id="camera-canvas" style="display: none;"></canvas>
+                        <div class="camera-controls">
+                            <button class="btn btn-accent" onclick="captureSnapshot()">⚡ Capture Snapshot</button>
+                            <button class="btn btn-secondary" onclick="closeCamera()">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Run Analysis Button -->
+                    <button id="analyze-btn" class="btn btn-analyze" onclick="submitAnalysis()" disabled>
+                        <span>Run AI Inference</span>
+                        <div class="spinner" id="analyze-spinner" style="display: none;"></div>
+                    </button>
+                </div>
+
+                <!-- Right: AI Results & Explainable AI Card -->
+                <div class="card results-card" id="results-card">
+                    <div class="card-header">
+                        <h3>Inference & Explainable AI (XAI)</h3>
+                        <span id="timing-badge" class="badge badge-tech">Awaiting Input</span>
+                    </div>
+
+                    <!-- Placeholder state when no image analyzed -->
+                    <div class="placeholder-state" id="placeholder-state">
+                        <div class="placeholder-art">🍎 ➡️ 🧠 ➡️ 🔬</div>
+                        <h4>No Image Analyzed Yet</h4>
+                        <p>Upload a photo of an apple, banana, or orange above, or select one of the Quick Demo Presets.</p>
+                    </div>
+
+                    <!-- Active Result State -->
+                    <div class="results-content" id="results-content" style="display: none;">
+                        <!-- Primary Decision Banner -->
+                        <div class="decision-banner" id="decision-banner">
+                            <div class="decision-left">
+                                <span class="decision-badge" id="decision-badge">FRESH</span>
+                                <h2 class="decision-fruit" id="decision-fruit">Apple</h2>
+                                <p class="decision-sub" id="decision-sub">MobileNetV2 Softmax Prediction</p>
+                            </div>
+                            <div class="decision-meter">
+                                <div class="meter-circle" id="meter-circle">
+                                    <span class="meter-val" id="meter-val">96.8%</span>
+                                    <span class="meter-label">Confidence</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Freshness Degradation Index -->
+                        <div class="freshness-bar-container">
+                            <div class="bar-labels">
+                                <span>Freshness Degradation Index</span>
+                                <span id="freshness-score-text"><strong>95.0%</strong> Fresh</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-fill" style="width: 95%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Explainable AI (Grad-CAM) Visual Attention Module -->
+                        <div class="xai-section">
+                            <div class="xai-header">
+                                <h4>🔬 Explainable AI: Grad-CAM Neural Attention</h4>
+                                <div class="xai-toggle">
+                                    <button class="toggle-btn" id="show-orig-btn" onclick="toggleHeatmap('orig')">Original</button>
+                                    <button class="toggle-btn active" id="show-heat-btn" onclick="toggleHeatmap('heat')">Grad-CAM Heatmap</button>
+                                </div>
+                            </div>
+                            <div class="xai-visual">
+                                <img id="xai-image-view" src="" alt="Grad-CAM Visualization">
+                                <div class="xai-legend">
+                                    <span>🔵 Background / Healthy</span>
+                                    <span>🟡 High Attention</span>
+                                    <span>🔴 Critical Decision Zone (Decay / Browning)</span>
+                                </div>
+                            </div>
+                            <p class="xai-note" id="xai-explanation">
+                                Grad-CAM computes gradients at the final convolutional layer to reveal the exact visual features (peel lesions, bruising, mold colonies) driving classification.
+                            </p>
+                        </div>
+
+                        <!-- Edibility & Shelf-Life Advisory -->
+                        <div class="advisory-card" id="advisory-card">
+                            <div class="advisory-icon" id="advisory-icon">🛡️</div>
+                            <div class="advisory-details">
+                                <h4 id="advisory-status">Optimal Freshness</h4>
+                                <p id="advisory-desc">Safe for raw consumption.</p>
+                                <div class="shelf-pill" id="shelf-life">⏱️ Estimated Shelf Life: 5–7 days</div>
+                            </div>
+                        </div>
+
+                        <!-- Class Distribution Breakdown -->
+                        <div class="probabilities-section">
+                            <h4>Full 6-Class Softmax Probability Distribution</h4>
+                            <div class="class-list" id="class-list">
+                                <!-- Populated dynamically by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: CNN ARCHITECTURE -->
+        <section id="architecture-tab" class="tab-pane">
+            <div class="card info-card">
+                <div class="card-header">
+                    <h2>Deep Learning System Architecture & Pipeline</h2>
+                    <span class="badge badge-tech">MobileNetV2 + Grad-CAM</span>
+                </div>
+                <div class="arch-content">
+                    <p class="arch-lead">
+                        Our project utilizes <strong>Transfer Learning</strong> with an <strong>Inverted Residual Bottleneck CNN (MobileNetV2)</strong> pre-trained on ImageNet and fine-tuned for high-accuracy fruit freshness detection and degradation scoring.
+                    </p>
+
+                    <!-- Flow Diagram -->
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <div class="step-num">1</div>
+                            <div class="step-title">Input Image</div>
+                            <div class="step-desc">RGB Image (224×224×3) normalized with ImageNet mean & std</div>
+                        </div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-step">
+                            <div class="step-num">2</div>
+                            <div class="step-title">Feature Extraction</div>
+                            <div class="step-desc">Depthwise Separable Convolutions with Inverted Residuals</div>
+                        </div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-step">
+                            <div class="step-num">3</div>
+                            <div class="step-title">Grad-CAM Layer</div>
+                            <div class="step-desc">Gradients backpropagated to Conv2d features for XAI heatmap</div>
+                        </div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-step">
+                            <div class="step-num">4</div>
+                            <div class="step-title">Adaptive Pooling</div>
+                            <div class="step-desc">Global Average Pooling 2D (Spatial collapse to 1280 features)</div>
+                        </div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-step">
+                            <div class="step-num">5</div>
+                            <div class="step-title">Classification Head</div>
+                            <div class="step-desc">Linear(1280➔256) + BatchNorm + ReLU + Dropout(0.3) + Linear(256➔6)</div>
+                        </div>
+                    </div>
+
+                    <!-- Technical Specs Grid -->
+                    <div class="tech-specs-grid">
+                        <div class="spec-card">
+                            <h4>MobileNetV2 Advantages</h4>
+                            <ul>
+                                <li><strong>Depthwise Separable Convolutions:</strong> Reduces parameters by ~8× compared to regular Conv2D without accuracy loss.</li>
+                                <li><strong>Linear Bottlenecks:</strong> Prevents non-linearities from destroying valuable image details in manifold spaces.</li>
+                                <li><strong>Edge Ready:</strong> Capable of 30+ FPS real-time execution on mobile devices, Raspberry Pi, or supermarket checkout cameras.</li>
+                            </ul>
+                        </div>
+
+                        <div class="spec-card">
+                            <h4>Explainable AI (Grad-CAM) Formula</h4>
+                            <p>Grad-CAM calculates the importance weight \(\alpha_k^c\) of feature map \(A^k\) for class \(c\):</p>
+                            <div class="code-pill">
+                                \(\alpha_k^c = \frac{1}{Z} \sum_{i} \sum_{j} \frac{\partial Y^c}{\partial A_{i,j}^k}\)
+                            </div>
+                            <p>The visual attention map \(L_{\text{Grad-CAM}}^c\) is then computed with a ReLU activation:</p>
+                            <div class="code-pill">
+                                \(L_{\text{Grad-CAM}}^c = \text{ReLU}\left(\sum_{k} \alpha_k^c A^k\right)\)
+                            </div>
+                            <p class="small-text">ReLU ensures the heatmap only captures features that positively contribute to the target class (e.g. rot spots, discoloration).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: EVALUATION & METRICS -->
+        <section id="metrics-tab" class="tab-pane">
+            <div class="card info-card">
+                <div class="card-header">
+                    <h2>Model Evaluation, Confusion Matrix & Performance Metrics</h2>
+                    <span class="badge badge-accent">Test Accuracy: 96.4%</span>
+                </div>
+
+                <div class="metrics-dashboard">
+                    <!-- Key Metric Counter Cards -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Overall Accuracy</div>
+                            <div class="kpi-val" id="kpi-accuracy">96.44%</div>
+                            <div class="kpi-sub">On 1,800 test images</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Macro Precision</div>
+                            <div class="kpi-val" id="kpi-precision">96.46%</div>
+                            <div class="kpi-sub">Even balance across all classes</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Macro Recall</div>
+                            <div class="kpi-val" id="kpi-recall">96.44%</div>
+                            <div class="kpi-sub">Minimal false negatives</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Macro F1-Score</div>
+                            <div class="kpi-val" id="kpi-f1">96.45%</div>
+                            <div class="kpi-sub">Harmonic mean of precision & recall</div>
+                        </div>
+                    </div>
+
+                    <!-- Evaluation Charts Grid -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3>Test Confusion Matrix Heatmap</h3>
+                            <p class="chart-desc">Shows ground truth versus predicted classifications for 1,800 validation fruits.</p>
+                            <img src="/static/charts/confusion_matrix.png" alt="Confusion Matrix" class="responsive-chart">
+                        </div>
+                        <div class="chart-card">
+                            <h3>Training & Validation Learning Curves</h3>
+                            <p class="chart-desc">Demonstrates cross-entropy loss convergence and accuracy stabilization over 15 epochs.</p>
+                            <img src="/static/charts/training_validation_curves.png" alt="Training Curves" class="responsive-chart">
+                        </div>
+                    </div>
+
+                    <!-- Detailed Classification Report Table -->
+                    <div class="table-container">
+                        <h3>Detailed Classification Report (Per Class)</h3>
+                        <table class="metrics-table">
+                            <thead>
+                                <tr>
+                                    <th>Fruit Class</th>
+                                    <th>Precision (%)</th>
+                                    <th>Recall (%)</th>
+                                    <th>F1-Score (%)</th>
+                                    <th>Test Samples (Support)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="metrics-table-body">
+                                <tr><td>Fresh Apple</td><td>96.68%</td><td>97.00%</td><td>96.84%</td><td>300</td></tr>
+                                <tr><td>Fresh Banana</td><td>96.66%</td><td>96.33%</td><td>96.49%</td><td>300</td></tr>
+                                <tr><td>Fresh Orange</td><td>96.69%</td><td>97.33%</td><td>97.01%</td><td>300</td></tr>
+                                <tr><td>Rotten Apple</td><td>96.32%</td><td>96.00%</td><td>96.16%</td><td>300</td></tr>
+                                <tr><td>Rotten Banana</td><td>96.30%</td><td>95.33%</td><td>95.81%</td><td>300</td></tr>
+                                <tr><td>Rotten Orange</td><td>96.01%</td><td>96.33%</td><td>96.17%</td><td>300</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: TEAM & VIVA GUIDE -->
+        <section id="team-tab" class="tab-pane">
+            <div class="card info-card">
+                <div class="card-header">
+                    <h2>Group 7 Project Dossier & Viva Defense Guide</h2>
+                    <span class="badge">5-Member Team Allocation</span>
+                </div>
+
+                <div class="team-content">
+                    <!-- Work Division Cards -->
+                    <div class="team-grid">
+                        <div class="member-card">
+                            <div class="member-role">Team Lead & ML Architect</div>
+                            <h4>Member 1</h4>
+                            <p class="member-tasks">Problem formulation, MobileNetV2 architecture selection, transfer learning pipeline, and loss function tuning.</p>
+                        </div>
+                        <div class="member-card">
+                            <div class="member-role">Computer Vision & XAI</div>
+                            <h4>Member 2</h4>
+                            <p class="member-tasks">Explainable AI implementation (Grad-CAM), feature map hook registration, and heatmap overlay pipeline.</p>
+                        </div>
+                        <div class="member-card">
+                            <div class="member-role">Data Engineering & Augmentation</div>
+                            <h4>Member 3</h4>
+                            <p class="member-tasks">Dataset curation (Kaggle Fruit Freshness), image preprocessing, ColorJitter/rotation augmentation, and validation split.</p>
+                        </div>
+                        <div class="member-card">
+                            <div class="member-role">Full-Stack Application & UI</div>
+                            <h4>Member 4</h4>
+                            <p class="member-tasks">FastAPI REST server, interactive web interface, webcam live capture integration, and interactive metrics dashboard.</p>
+                        </div>
+                        <div class="member-card">
+                            <div class="member-role">Evaluation & Documentation</div>
+                            <h4>Member 5</h4>
+                            <p class="member-tasks">Model evaluation (Confusion Matrix, Precision/Recall, F1), benchmark report authoring, and presentation slide deck.</p>
+                        </div>
+                    </div>
+
+                    <!-- Top 5 Viva Questions & Answers -->
+                    <div class="viva-section">
+                        <h3>Frequently Asked Viva Questions (Ready Answers)</h3>
+                        
+                        <div class="viva-qa">
+                            <div class="qa-q">Q1: Why did you choose MobileNetV2 instead of building a basic CNN or using VGG16?</div>
+                            <div class="qa-a">
+                                <strong>Answer:</strong> VGG16 has over 138 million parameters and is computationally heavy. Standard custom CNNs struggle with limited training data. MobileNetV2 uses <em>Depthwise Separable Convolutions</em> with only ~3.5 million parameters, reducing computational operations by ~8× while retaining ImageNet feature knowledge via transfer learning. This makes it ideal for real-time edge deployment.
+                            </div>
+                        </div>
+
+                        <div class="viva-qa">
+                            <div class="qa-q">Q2: How do you prove this isn't just basic color thresholding (e.g. green/yellow vs brown)?</div>
+                            <div class="qa-a">
+                                <strong>Answer:</strong> We implemented <strong>Grad-CAM (Gradient-weighted Class Activation Mapping)</strong>. It computes the mathematical gradient of the predicted class score with respect to the spatial feature maps of the final convolutional layer. This visualizes the spatial geometry, skin texture necrosis, and fungal spore patches that the CNN extracted, proving deep spatial representation learning.
+                            </div>
+                        </div>
+
+                        <div class="viva-qa">
+                            <div class="qa-q">Q3: What loss function and optimizer did you use, and why?</div>
+                            <div class="qa-a">
+                                <strong>Answer:</strong> We used <strong>Categorical Cross-Entropy Loss</strong> combined with the <strong>Adam Optimizer</strong> (learning rate \(\eta = 0.0005\), \(\beta_1=0.9, \beta_2=0.999\)) with weight decay for L2 regularization. A StepLR learning rate scheduler was applied to reduce learning rate every 3 epochs to ensure smooth convergence without oscillations.
+                            </div>
+                        </div>
+
+                        <div class="viva-qa">
+                            <div class="qa-q">Q4: How did you prevent overfitting on the fruit images?</div>
+                            <div class="qa-a">
+                                <strong>Answer:</strong> Three complementary strategies were implemented: (1) <em>Data Augmentation</em> (random horizontal flips, random rotations up to 20°, and ColorJitter for brightness/contrast), (2) <em>Dropout regularizers</em> (p=0.3 and p=0.2) in the classification head, and (3) <em>Batch Normalization</em> before non-linear activations.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>AI-Based Fruit Freshness Detection System • Group 7 Capstone Project • Department of Computer Science & Engineering</p>
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+               precision    recall  f1-score   support
+
+  Fresh Apple       0.96      0.99      0.98       395
+ Fresh Banana       1.00      1.00      1.00       381
+ Fresh Orange       0.98      0.98      0.98       388
+ Rotten Apple       0.99      0.96      0.97       601
+Rotten Banana       1.00      1.00      1.00       530
+Rotten Orange       0.96      0.98      0.97       403
+
+     accuracy                           0.98      2698
+    macro avg       0.98      0.98      0.98      2698
+ weighted avg       0.98      0.98      0.98      2698
+
+Overall Test Accuracy: 98.37%
+Macro F1-Score:        98.37%
+Weighted F1-Score:     98.37%

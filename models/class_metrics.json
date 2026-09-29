@@ -1,0 +1,108 @@
+{
+  "status": "success",
+  "dataset": "Real Fruit Freshness Dataset (Kaggle)",
+  "model_architecture": "MobileNetV2 (Transfer Learning)",
+  "num_classes": 6,
+  "classes": [
+    "Fresh Apple",
+    "Fresh Banana",
+    "Fresh Orange",
+    "Rotten Apple",
+    "Rotten Banana",
+    "Rotten Orange"
+  ],
+  "test_samples": 2698,
+  "overall_accuracy_pct": 98.37,
+  "macro_precision_pct": 98.26,
+  "macro_recall_pct": 98.49,
+  "macro_f1_pct": 98.37,
+  "weighted_f1_pct": 98.37,
+  "per_class_metrics": {
+    "Fresh Apple": {
+      "precision": 96.08,
+      "recall": 99.24,
+      "f1_score": 97.63,
+      "support": 395
+    },
+    "Fresh Banana": {
+      "precision": 99.74,
+      "recall": 100.0,
+      "f1_score": 99.87,
+      "support": 381
+    },
+    "Fresh Orange": {
+      "precision": 98.44,
+      "recall": 97.68,
+      "f1_score": 98.06,
+      "support": 388
+    },
+    "Rotten Apple": {
+      "precision": 98.97,
+      "recall": 96.01,
+      "f1_score": 97.47,
+      "support": 601
+    },
+    "Rotten Banana": {
+      "precision": 100.0,
+      "recall": 100.0,
+      "f1_score": 100.0,
+      "support": 530
+    },
+    "Rotten Orange": {
+      "precision": 96.34,
+      "recall": 98.01,
+      "f1_score": 97.17,
+      "support": 403
+    }
+  },
+  "confusion_matrix": [
+    [
+      392,
+      0,
+      1,
+      2,
+      0,
+      0
+    ],
+    [
+      0,
+      381,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      3,
+      0,
+      379,
+      1,
+      0,
+      5
+    ],
+    [
+      13,
+      1,
+      0,
+      577,
+      0,
+      10
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      530,
+      0
+    ],
+    [
+      0,
+      0,
+      5,
+      3,
+      0,
+      395
+    ]
+  ]
+}

@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FreshVision AI - AI-Powered Fruit Freshness Detection. An academic deep-learning application visually classifying apples, bananas, and oranges.">
+    <title>FreshVision AI | AI-Powered Fruit Freshness Detection</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Sticky Navigation Bar -->
+    <header class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#home" class="brand" aria-label="FreshVision AI Home">
+                <span class="brand-icon" aria-hidden="true">🌱</span>
+                <span class="brand-text">FreshVision <span class="brand-accent">AI</span></span>
+            </a>
+
+            <!-- Desktop Nav Menu -->
+            <nav class="nav-menu" id="nav-menu" aria-label="Main Navigation">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#detect" class="nav-link">Detect</a>
+                <a href="#how-it-works" class="nav-link">How It Works</a>
+                <a href="#about" class="nav-link">About</a>
+            </nav>
+
+            <div class="nav-actions">
+                <a href="#detect" class="btn btn-nav-cta">Try Detection</a>
+                <!-- Mobile Hamburger Button -->
+                <button class="hamburger-btn" id="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-drawer">
+                    <span class="hamburger-bar"></span>
+                    <span class="hamburger-bar"></span>
+                    <span class="hamburger-bar"></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-drawer" id="mobile-drawer" aria-hidden="true">
+        <nav class="mobile-nav" aria-label="Mobile Navigation">
+            <a href="#home" class="mobile-link">Home</a>
+            <a href="#detect" class="mobile-link">Detect</a>
+            <a href="#how-it-works" class="mobile-link">How It Works</a>
+            <a href="#about" class="mobile-link">About</a>
+            <a href="#detect" class="btn btn-primary mobile-cta">Try Detection</a>
+        </nav>
+    </div>
+
+    <main id="main-content">
+        <!-- HERO SECTION -->
+        <section class="hero-section" id="home">
+            <div class="container hero-container">
+                <div class="hero-content">
+                    <div class="academic-badge">
+                        <span class="badge-dot" aria-hidden="true"></span>
+                        <span>AI Open Ended Project • SCET</span>
+                    </div>
+
+                    <h1 class="hero-title">See Freshness Through AI.</h1>
+                    
+                    <p class="hero-subtitle">
+                        Upload a fruit image and let our deep learning model classify it as fresh or rotten.
+                    </p>
+
+                    <p class="hero-secondary-text">
+                        Visual classification for apples, bananas, and oranges with confidence scores and Grad-CAM explanations.
+                    </p>
+
+                    <div class="hero-cta-group">
+                        <a href="#detect" class="btn btn-primary btn-lg">
+                            <span>Try Detection</span>
+                            <span class="btn-arrow" aria-hidden="true">→</span>
+                        </a>
+                        <a href="#how-it-works" class="btn btn-secondary btn-lg">How It Works</a>
+                    </div>
+
+                    <div class="hero-meta-row">
+                        <div class="scope-pill">
+                            <span aria-hidden="true">🎯</span>
+                            <span>3 Fruits • 6 Classes • Deep Learning</span>
+                        </div>
+                        <div class="supported-fruits-note">
+                            Supported fruits: <strong>Apple • Banana • Orange</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Visual Showcase with Static Sample Card -->
+                <div class="hero-visual-wrapper">
+                    <div class="hero-card-stack">
+                        <!-- Main Visual Card -->
+                        <div class="hero-showcase-card">
+                            <div class="showcase-header">
+                                <span class="browser-dot red"></span>
+                                <span class="browser-dot yellow"></span>
+                                <span class="browser-dot green"></span>
+                                <span class="showcase-title">MobileNetV2 Visual Classifier</span>
+                            </div>
+                            <div class="showcase-body">
+                                <div class="showcase-fruit-preview">
+                                    <img src="/static/samples/freshapples.jpg" alt="Apple Reference Image" class="showcase-img">
+                                    <div class="showcase-tag">Reference Sample</div>
+                                </div>
+                                <div class="showcase-caption">
+                                    <div class="caption-item">
+                                        <span class="caption-label">Classification Target</span>
+                                        <span class="caption-val">Apple • Fresh</span>
+                                    </div>
+                                    <div class="caption-item">
+                                        <span class="caption-label">Architecture</span>
+                                        <span class="caption-val">MobileNetV2</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Floating Sample Prediction Card -->
+                        <div class="floating-sample-card" aria-label="Sample result preview">
+                            <div class="floating-header">
+                                <span class="floating-brand">FreshVision AI</span>
+                                <span class="floating-badge">Sample Result</span>
+                            </div>
+                            <div class="floating-body">
+                                <span class="floating-fruit-icon" aria-hidden="true">🍎</span>
+                                <div class="floating-text">
+                                    <h4 class="floating-class-name">Fresh Apple</h4>
+                                    <p class="floating-note">Example prediction</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- WHAT YOU GET SECTION -->
+        <section class="features-summary-section">
+            <div class="container">
+                <div class="section-header text-center">
+                    <span class="section-tag">Capabilities</span>
+                    <h2 class="section-title">What You Get</h2>
+                    <p class="section-desc">Key outputs provided for every analyzed fruit image.</p>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">🏷️</div>
+                        <h3 class="feature-title">Fruit Classification</h3>
+                        <p class="feature-desc">Identifies one of the supported fruit freshness categories.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">📊</div>
+                        <h3 class="feature-title">Confidence Score</h3>
+                        <p class="feature-desc">Shows the model's confidence for the prediction.</p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">🔬</div>
+                        <h3 class="feature-title">Visual Explanation</h3>
+                        <p class="feature-desc">Uses Grad-CAM to highlight influential image regions.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DETECTION WORKSPACE SECTION (MAIN CORE EXPERIENCE) -->
+        <section class="detect-section" id="detect">
+            <div class="container">
+                <div class="section-header text-center">
+                    <div class="section-badge-pill">
+                        <span>6 Classes • 3 Fruits</span>
+                    </div>
+                    <h2 class="section-title">Check Fruit Freshness</h2>
+                    <p class="section-desc">
+                        Upload an image or use your camera to get an AI-powered visual classification.
+                    </p>
+                </div>
+
+                <!-- Sample Presets Strip -->
+                <div class="sample-presets-block">
+                    <div class="presets-header">
+                        <div>
+                            <h3 class="presets-title">⚡ Try a Sample</h3>
+                            <p class="presets-subtitle">Explore how FreshVision AI classifies different fruit conditions.</p>
+                        </div>
+                        <span class="presets-count-badge">6 Presets Available</span>
+                    </div>
+
+                    <div class="preset-cards-grid">
+                        <button type="button" class="preset-card" onclick="loadSamplePreset('fresh_apple')" aria-label="Analyze Fresh Apple Sample">
+                            <img src="/static/samples/freshapples.jpg" alt="Fresh Apple" class="preset-thumb">
+                            <div class="preset-meta">
+                                <span class="preset-name">Fresh Apple</span>
+                                <span class="status-chip chip-fresh">Fresh</span>
+                            </div>
+                        </button>
+
+                        <button type="button" class="preset-card" onclick="loadSamplePreset('rotten_apple')" aria-label="Analyze Rotten Apple Sample">
+                            <img src="/static/samples/rottenapples.jpg" alt="Rotten Apple" class="preset-thumb">
+                            <div class="preset-meta">
+                                <span class="preset-name">Rotten Apple</span>
+                                <span class="status-chip chip-rotten">Rotten</span>
+                            </div>
+                        </button>
+
+                        <button type="button" class="preset-card" onclick="loadSamplePreset('fresh_banana')" aria-label="Analyze Fresh Banana Sample">
+                            <img src="/static/samples/freshbanana.jpg" alt="Fresh Banana" class="preset-thumb">
+                            <div class="preset-meta">
+                                <span class="preset-name">Fresh Banana</span>
+                                <span class="status-chip chip-fresh">Fresh</span>
+                            </div>
+                        </button>
+
+                        <button type="button" class="preset-card" onclick="loadSamplePreset('rotten_banana')" aria-label="Analyze Rotten Banana Sample">
+                            <img src="/static/samples/rottenbanana.jpg" alt="Rotten Banana" class="preset-thumb">
+                            <div class="preset-meta">
+                                <span class="preset-name">Rotten Banana</span>
+                                <span class="status-chip chip-rotten">Rotten</span>
+                            </div>
+                        </button>
+
+                        <button type="button" class="preset-card" onclick="loadSamplePreset('fresh_orange')" aria-label="Analyze Fresh Orange Sample">
+                            <img src="/static/samples/freshoranges.jpg" alt="Fresh Orange" class="preset-thumb">
+                            <div class="preset-meta">
+                                <span class="preset-name">Fresh Orange</span>
+                                <span class="status-chip chip-fresh">Fresh</span>
+                            </div>
+                        </button>
+
+                        <button type="button" class="preset-card" onclick="loadSamplePreset('rotten_orange')" aria-label="Analyze Rotten Orange Sample">
+                            <img src="/static/samples/rottenoranges.jpg" alt="Rotten Orange" class="preset-thumb">
+                            <div class="preset-meta">
+                                <span class="preset-name">Rotten Orange</span>
+                                <span class="status-chip chip-rotten">Rotten</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Scanner & Results 2-Column Grid -->
+                <div class="scanner-layout-grid">
+                    <!-- Left: Upload & Camera Workspace Card -->
+                    <div class="workspace-card" id="upload-card">
+                        <div class="card-top-bar">
+                            <h3 class="card-heading">Input Fruit Image</h3>
+                            <span class="file-specs-badge">Supported: JPG • JPEG • PNG</span>
+                        </div>
+
+                        <!-- Drop Zone -->
+                        <div class="drop-zone" id="drop-zone" tabindex="0" role="button" aria-label="Drop your fruit image here or click to browse image">
+                            <input type="file" id="file-input" accept="image/jpeg, image/png, image/webp" style="display: none;">
+
+                            <!-- Initial Empty Prompt -->
+                            <div class="drop-prompt" id="drop-prompt">
+                                <div class="drop-icon-circle" aria-hidden="true">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                                        <circle cx="9" cy="9" r="2"/>
+                                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                                    </svg>
+                                </div>
+                                <h4 class="drop-title" id="drop-title">DROP YOUR FRUIT IMAGE HERE</h4>
+                                <p class="drop-text" id="drop-text">or Choose an image from your computer</p>
+                                
+                                <div class="drop-actions">
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('file-input').click()">
+                                        Browse Image
+                                    </button>
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="openCameraStream()">
+                                        📷 Use Camera
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Preview of Uploaded/Selected Image -->
+                            <div class="image-preview-box" id="image-preview-box" style="display: none;">
+                                <img id="selected-image-preview" src="" alt="Selected fruit preview">
+                                <div class="preview-actions-bar">
+                                    <button type="button" class="btn-preview-change" onclick="resetUploadState()" aria-label="Change selected image">
+                                        ✕ Change Image
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Camera Preview Module -->
+                        <div class="camera-stream-box" id="camera-stream-box" style="display: none;">
+                            <video id="webcam-video" autoplay playsinline aria-label="Live camera preview"></video>
+                            <canvas id="snapshot-canvas" style="display: none;"></canvas>
+                            <div class="camera-controls">
+                                <button type="button" class="btn btn-primary" onclick="captureCameraSnapshot()">
+                                    📸 Capture Image
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="closeCameraStream()">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- User Guidance Note -->
+                        <p class="upload-guidance-note">
+                            💡 For best results, use a clear, well-lit image with the fruit clearly visible.
+                        </p>
+
+                        <!-- Error Alert Banner -->
+                        <div class="alert-box alert-error" id="upload-alert" style="display: none;" role="alert">
+                            <span class="alert-icon" aria-hidden="true">⚠️</span>
+                            <div class="alert-text">
+                                <strong id="alert-title">Couldn't read this image.</strong>
+                                <span id="alert-desc">Please choose a valid JPG, JPEG, or PNG image.</span>
+                            </div>
+                        </div>
+
+                        <!-- Analyze CTA Button -->
+                        <button type="button" id="btn-analyze" class="btn btn-primary btn-analyze" onclick="executeImageAnalysis()" disabled>
+                            <span id="btn-analyze-text">Analyze with AI</span>
+                            <div class="loading-spinner" id="analyze-spinner" style="display: none;" aria-hidden="true"></div>
+                        </button>
+                    </div>
+
+                    <!-- Right: Results & Explainable AI Card -->
+                    <div class="workspace-card" id="results-card">
+                        <div class="card-top-bar">
+                            <h3 class="card-heading">AI Prediction</h3>
+                            <span class="status-indicator-badge" id="status-indicator-badge">Awaiting Input</span>
+                        </div>
+
+                        <!-- Empty State Placeholder -->
+                        <div class="empty-state" id="empty-state">
+                            <div class="empty-icon-wrap" aria-hidden="true">
+                                <span class="empty-icon">🍎</span>
+                                <span class="empty-sparkle">✨</span>
+                            </div>
+                            <h4 class="empty-title">Your result will appear here.</h4>
+                            <p class="empty-text">
+                                Upload an image or choose a sample to start an AI analysis.
+                            </p>
+                        </div>
+
+                        <!-- Indeterminate Loading State -->
+                        <div class="analysis-loading-state" id="analysis-loading-state" style="display: none;">
+                            <div class="loading-radar-ring" aria-hidden="true">
+                                <div class="radar-core"></div>
+                            </div>
+                            <h4 class="loading-headline" id="loading-status-text">Analyzing image...</h4>
+                            <p class="loading-sub">Running MobileNetV2 classification and generating Grad-CAM explanation.</p>
+                        </div>
+
+                        <!-- Active Prediction Result Content -->
+                        <div class="result-details-content" id="result-details-content" style="display: none;">
+                            <!-- Outcome Banner -->
+                            <div class="outcome-banner" id="outcome-banner">
+                                <div class="outcome-left">
+                                    <div class="outcome-meta-line">
+                                        <span class="freshness-pill" id="result-freshness-pill">Fresh</span>
+                                        <span class="fruit-type-chip" id="result-fruit-type">Apple</span>
+                                    </div>
+                                    <h4 class="outcome-prediction-title" id="result-full-label">Fresh Apple</h4>
+                                    <p class="outcome-model-tag">Model: MobileNetV2</p>
+                                </div>
+                                <div class="outcome-right">
+                                    <div class="confidence-circle" id="confidence-circle" aria-label="Prediction Confidence">
+                                        <span class="confidence-number" id="result-confidence-val">--%</span>
+                                        <span class="confidence-label">Confidence</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Lower Confidence Caution Banner -->
+                            <div class="confidence-caution-banner" id="confidence-caution-banner" style="display: none;">
+                                <span aria-hidden="true">ℹ️</span>
+                                <span>Lower confidence — try a clearer image.</span>
+                            </div>
+
+                            <!-- Key Prediction Details Card -->
+                            <div class="details-spec-card">
+                                <div class="spec-item">
+                                    <span class="spec-label">Prediction</span>
+                                    <span class="spec-value" id="detail-prediction">Fresh Apple</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Fruit</span>
+                                    <span class="spec-value" id="detail-fruit">Apple</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Condition</span>
+                                    <span class="spec-value" id="detail-condition">Fresh</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Confidence</span>
+                                    <span class="spec-value font-mono" id="detail-confidence">--%</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Model</span>
+                                    <span class="spec-value">MobileNetV2</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span class="spec-label">Explanation</span>
+                                    <span class="spec-value score-green">Grad-CAM Available</span>
+                                </div>
+                            </div>
+
+                            <!-- Grad-CAM Visual Attention Module -->
+                            <div class="gradcam-module">
+                                <div class="gradcam-header">
+                                    <div>
+                                        <h4 class="gradcam-title">Why did the AI predict this?</h4>
+                                        <p class="gradcam-desc">Grad-CAM highlights image regions that contributed to the model's prediction.</p>
+                                    </div>
+                                    <div class="view-switch-toggle" role="tablist">
+                                        <button type="button" class="switch-btn active" id="btn-view-side" onclick="setGradCamLayout('side')" aria-selected="true">Side by Side</button>
+                                        <button type="button" class="switch-btn" id="btn-view-overlay" onclick="setGradCamLayout('overlay')" aria-selected="false">Heatmap Only</button>
+                                    </div>
+                                </div>
+
+                                <div class="gradcam-comparison-view" id="gradcam-view-container">
+                                    <div class="cam-frame" id="frame-original">
+                                        <span class="frame-tag">Original Image</span>
+                                        <img id="view-original-img" src="" alt="Original fruit input">
+                                    </div>
+                                    <div class="cam-frame" id="frame-heat">
+                                        <span class="frame-tag frame-tag-cam">Grad-CAM Heatmap</span>
+                                        <img id="view-gradcam-img" src="" alt="Grad-CAM visual attention heatmap">
+                                        <div class="cam-legend" aria-hidden="true">
+                                            <span>Low Attention</span>
+                                            <div class="legend-gradient"></div>
+                                            <span>Influential Regions</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Expandable Explanation -->
+                                <details class="gradcam-details-drawer">
+                                    <summary class="drawer-summary">How Grad-CAM works</summary>
+                                    <div class="drawer-body">
+                                        <p>
+                                            Grad-CAM uses gradients from the model to highlight image regions that contributed to a prediction. It provides a visual explanation of the model's attention, but does not prove that the prediction is correct.
+                                        </p>
+                                    </div>
+                                </details>
+                            </div>
+
+                            <!-- 6-Class Softmax Probability Breakdown -->
+                            <div class="distribution-block">
+                                <h4 class="distribution-title">Softmax Probability Distribution</h4>
+                                <div class="distribution-bars" id="distribution-bars">
+                                    <!-- Populated dynamically from actual API response -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- HOW IT WORKS SECTION -->
+        <section class="how-it-works-section" id="how-it-works">
+            <div class="container">
+                <div class="section-header text-center">
+                    <span class="section-tag">Workflow</span>
+                    <h2 class="section-title">How It Works</h2>
+                    <p class="section-desc">From image to explainable AI prediction in three simple steps.</p>
+                </div>
+
+                <div class="steps-flow-grid">
+                    <div class="step-card">
+                        <div class="step-badge">01</div>
+                        <h3 class="step-title">UPLOAD</h3>
+                        <p class="step-desc">Upload an image of an apple, banana, or orange.</p>
+                    </div>
+
+                    <div class="step-connector" aria-hidden="true">➔</div>
+
+                    <div class="step-card">
+                        <div class="step-badge">02</div>
+                        <h3 class="step-title">ANALYZE</h3>
+                        <p class="step-desc">The MobileNetV2-based model processes the image and predicts one of six supported classes.</p>
+                    </div>
+
+                    <div class="step-connector" aria-hidden="true">➔</div>
+
+                    <div class="step-card">
+                        <div class="step-badge">03</div>
+                        <h3 class="step-title">UNDERSTAND</h3>
+                        <p class="step-desc">View the prediction, confidence, and Grad-CAM visualization.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SUPPORTED FRUITS SECTION -->
+        <section class="fruits-scope-section">
+            <div class="container">
+                <div class="section-header text-center">
+                    <span class="section-tag">Dataset Classes</span>
+                    <h2 class="section-title">Supported Fruits</h2>
+                    <p class="section-desc">Three fruit types, six visual freshness categories.</p>
+                </div>
+
+                <div class="fruits-grid">
+                    <div class="fruit-card">
+                        <div class="fruit-icon" aria-hidden="true">🍎</div>
+                        <h3 class="fruit-name">APPLE</h3>
+                        <div class="fruit-classes-pills">
+                            <span class="category-pill fresh">Fresh Apple</span>
+                            <span class="category-pill rotten">Rotten Apple</span>
+                        </div>
+                        <p class="fruit-description">Learns visual patterns associated with fresh and rotten apple images.</p>
+                    </div>
+
+                    <div class="fruit-card">
+                        <div class="fruit-icon" aria-hidden="true">🍌</div>
+                        <h3 class="fruit-name">BANANA</h3>
+                        <div class="fruit-classes-pills">
+                            <span class="category-pill fresh">Fresh Banana</span>
+                            <span class="category-pill rotten">Rotten Banana</span>
+                        </div>
+                        <p class="fruit-description">Learns visual patterns associated with fresh and rotten banana images.</p>
+                    </div>
+
+                    <div class="fruit-card">
+                        <div class="fruit-icon" aria-hidden="true">🍊</div>
+                        <h3 class="fruit-name">ORANGE</h3>
+                        <div class="fruit-classes-pills">
+                            <span class="category-pill fresh">Fresh Orange</span>
+                            <span class="category-pill rotten">Rotten Orange</span>
+                        </div>
+                        <p class="fruit-description">Learns visual patterns associated with fresh and rotten orange images.</p>
+                    </div>
+                </div>
+
+                <div class="scope-disclaimer-note">
+                    <span aria-hidden="true">📌</span>
+                    <span>Current Model Scope: <strong>3 Fruits • 6 Classes</strong>. Images outside these categories may yield unpredictable outputs.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- TECHNOLOGY SECTION -->
+        <section class="tech-section" id="about">
+            <div class="container">
+                <div class="section-header text-center">
+                    <span class="section-tag">Technology</span>
+                    <h2 class="section-title">Built With Deep Learning</h2>
+                    <p class="section-desc">The software stack powering model training, inference, and interpretability.</p>
+                </div>
+
+                <div class="tech-grid">
+                    <div class="tech-card">
+                        <div class="tech-header">
+                            <span class="tech-icon" aria-hidden="true">🔥</span>
+                            <h3 class="tech-title">PyTorch</h3>
+                        </div>
+                        <p class="tech-desc">Deep learning framework used to build and run the image classification model.</p>
+                    </div>
+
+                    <div class="tech-card">
+                        <div class="tech-header">
+                            <span class="tech-icon" aria-hidden="true">⚡</span>
+                            <h3 class="tech-title">MobileNetV2</h3>
+                        </div>
+                        <p class="tech-desc">A lightweight convolutional neural network architecture used for efficient image classification.</p>
+                    </div>
+
+                    <div class="tech-card">
+                        <div class="tech-header">
+                            <span class="tech-icon" aria-hidden="true">🔄</span>
+                            <h3 class="tech-title">Transfer Learning</h3>
+                        </div>
+                        <p class="tech-desc">Adapts features learned from a large image dataset to the fruit classification task.</p>
+                    </div>
+
+                    <div class="tech-card">
+                        <div class="tech-header">
+                            <span class="tech-icon" aria-hidden="true">🔬</span>
+                            <h3 class="tech-title">Grad-CAM</h3>
+                        </div>
+                        <p class="tech-desc">Visualizes image regions that contributed to the model's prediction.</p>
+                    </div>
+
+                    <div class="tech-card">
+                        <div class="tech-header">
+                            <span class="tech-icon" aria-hidden="true">🚀</span>
+                            <h3 class="tech-title">FastAPI</h3>
+                        </div>
+                        <p class="tech-desc">Provides REST API endpoints for image upload and model inference.</p>
+                    </div>
+
+                    <div class="tech-card">
+                        <div class="tech-header">
+                            <span class="tech-icon" aria-hidden="true">👁️</span>
+                            <h3 class="tech-title">Computer Vision</h3>
+                        </div>
+                        <p class="tech-desc">Processes images through resizing, normalization, and neural-network inference.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BEST RESULTS / TIPS SECTION -->
+        <section class="tips-section">
+            <div class="container">
+                <div class="tips-card">
+                    <h3 class="tips-title">Get Better Results</h3>
+                    <p class="tips-subtitle">Simple guidelines for optimal visual classification:</p>
+                    <ul class="tips-list">
+                        <li><span class="check-icon">✓</span> Use a clear image</li>
+                        <li><span class="check-icon">✓</span> Keep the fruit clearly visible</li>
+                        <li><span class="check-icon">✓</span> Use good lighting</li>
+                        <li><span class="check-icon">✓</span> Avoid heavy shadows</li>
+                        <li><span class="check-icon">✓</span> Avoid excessive background clutter</li>
+                        <li><span class="check-icon">✓</span> Prefer one main fruit in the image</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- LIMITATIONS SECTION -->
+        <section class="limits-section">
+            <div class="container">
+                <div class="limits-card">
+                    <div class="limits-header">
+                        <span class="limits-badge">Transparency</span>
+                        <h3 class="limits-title">Know the Limits</h3>
+                    </div>
+                    <ul class="limits-list">
+                        <li>
+                            <strong>Scope:</strong> The current model supports three fruit types and six freshness categories.
+                        </li>
+                        <li>
+                            <strong>Image Quality:</strong> Lighting, camera angle, image quality, and background conditions can affect predictions.
+                        </li>
+                        <li>
+                            <strong>Visual Classification:</strong> The system evaluates visible image patterns and cannot determine internal fruit condition or microscopic properties.
+                        </li>
+                        <li>
+                            <strong>Unsupported Images:</strong> Images outside the supported categories may produce unreliable predictions.
+                        </li>
+                        <li>
+                            <strong>Academic Prototype:</strong> FreshVision AI is an academic AI prototype and is not a certified food-safety assessment.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABOUT SECTION -->
+        <section class="about-section">
+            <div class="container">
+                <div class="about-card">
+                    <h3 class="about-title">About FreshVision AI</h3>
+                    <p class="about-text">
+                        FreshVision AI is an academic deep-learning project that explores computer vision for visual fruit freshness classification. The system combines transfer learning with MobileNetV2 and Grad-CAM to provide both predictions and visual explanations.
+                    </p>
+                    <div class="about-scope-box">
+                        <h4 class="about-scope-heading">Current Scope</h4>
+                        <div class="scope-tags-row">
+                            <span class="scope-tag">3 fruits</span>
+                            <span class="scope-tag">6 classes</span>
+                            <span class="scope-tag">Image classification</span>
+                            <span class="scope-tag">Grad-CAM explanations</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container footer-container">
+            <div class="footer-top">
+                <div class="footer-brand-col">
+                    <div class="footer-brand">
+                        <span aria-hidden="true">🌱</span>
+                        <span>FreshVision AI</span>
+                    </div>
+                    <p class="footer-tagline">Visual fruit freshness classification powered by deep learning.</p>
+                    <div class="footer-project-badge">AI Open Ended Project • SCET</div>
+                </div>
+
+                <div class="footer-links-col">
+                    <h4 class="footer-heading">Navigation</h4>
+                    <ul class="footer-nav">
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#detect">Detect</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="#about">About</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links-col">
+                    <h4 class="footer-heading">Classification Scope</h4>
+                    <ul class="footer-nav">
+                        <li><span>Apple — Fresh / Rotten</span></li>
+                        <li><span>Banana — Fresh / Rotten</span></li>
+                        <li><span>Orange — Fresh / Rotten</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Prominent Academic Disclaimer -->
+            <div class="footer-disclaimer-box">
+                <p>
+                    <strong>Disclaimer:</strong> FreshVision AI provides visual image classification based on patterns learned from its training dataset. It is an academic AI prototype and should not be treated as a food-safety or consumption-safety assessment.
+                </p>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© 2026 FreshVision AI • Group 7</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
