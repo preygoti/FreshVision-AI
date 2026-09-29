@@ -56,20 +56,25 @@ except ImportError:
 app = FastAPI(title="FreshVision AI", description="Group 7 College Capstone Project")
 
 
-class VercelRewriteMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        path = request.scope.get("path", "")
-        matched = request.headers.get("x-matched-path", "")
-        if matched and matched != "/api/index.py":
-            request.scope["path"] = matched
-        elif path in ("/api/index.py", "/api", "/api/"):
-            request.scope["path"] = "/"
-        elif path.startswith("/api/index.py/"):
-            request.scope["path"] = path[len("/api/index.py"):]
-        return await call_next(request)
+class VercelPathMiddleware:
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            path = scope.get("path", "")
+            headers = dict(scope.get("headers", []))
+            matched = headers.get(b"x-matched-path", b"").decode("utf-8", errors="ignore")
+            if matched and matched != "/api/index.py":
+                scope["path"] = matched
+            elif path in ("/api/index.py", "/api", "/api/"):
+                scope["path"] = "/"
+            elif path.startswith("/api/index.py/"):
+                scope["path"] = path[len("/api/index.py"):]
+        await self.app(scope, receive, send)
 
 
-app.add_middleware(VercelRewriteMiddleware)
+app.add_middleware(VercelPathMiddleware)
 
 def resolve_path(*path_parts: str) -> str:
     """Finds directory or file across cwd, script dir, parent dir, or /var/task."""
@@ -101,7 +106,29 @@ os.makedirs(TEMPLATES_DIR, exist_ok=True)
 os.makedirs(MODELS_DIR, exist_ok=True)
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-templates = Jinja2Templates(directory=TEMPLATES_DIR)
+
+INDEX_HTML_CACHE = None
+
+def get_index_html() -> str:
+    global INDEX_HTML_CACHE
+    if INDEX_HTML_CACHE is not None:
+        return INDEX_HTML_CACHE
+    candidates = [
+        os.path.join(TEMPLATES_DIR, "index.html"),
+        os.path.join(os.getcwd(), "templates", "index.html"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates", "index.html"),
+        os.path.join("/var/task", "templates", "index.html"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.html"),
+    ]
+    for candidate in candidates:
+        if os.path.isfile(candidate):
+            try:
+                with open(candidate, "r", encoding="utf-8") as f:
+                    INDEX_HTML_CACHE = f.read()
+                    return INDEX_HTML_CACHE
+            except Exception:
+                pass
+    return "<h1>FreshVision AI</h1><p>Template index.html not found.</p>"
 
 # Engine instances
 onnx_session = None
@@ -291,8 +318,8 @@ def run_inference_on_pil(pil_img):
 @app.get("/index.html", response_class=HTMLResponse)
 @app.get("/api", response_class=HTMLResponse)
 @app.get("/api/index.py", response_class=HTMLResponse)
-async def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+async def home(request: Request = None):
+    return HTMLResponse(content=get_index_html())
 
 
 @app.post("/api/predict")
@@ -361,6 +388,28 @@ async def health_check():
         "templates_dir": os.path.exists(TEMPLATES_DIR),
         "onnx_model_path": os.path.exists(ONNX_MODEL_PATH)
     }
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    import traceback
+    tb = traceback.format_exc()
+    return HTMLResponse(
+        f"<html><body style='font-family:sans-serif;padding:24px;background:#0d1117;color:#e6edf3;'>"
+        f"<h2 style='color:#f85149;'>Runtime Exception: {type(exc).__name__}</h2>"
+        f"<pre style='background:#161b22;padding:16px;border-radius:8px;border:1px solid #30363d;color:#ff7b72;overflow:auto;'>{tb}</pre>"
+        f"<h4>Diagnostic Context:</h4>"
+        f"<ul>"
+        f"<li><b>URL:</b> {request.url}</li>"
+        f"<li><b>Scope Path:</b> {request.scope.get('path')}</li>"
+        f"<li><b>CWD:</b> {os.getcwd()}</li>"
+        f"<li><b>STATIC_DIR:</b> {STATIC_DIR} (exists: {os.path.exists(STATIC_DIR)})</li>"
+        f"<li><b>TEMPLATES_DIR:</b> {TEMPLATES_DIR} (exists: {os.path.exists(TEMPLATES_DIR)})</li>"
+        f"<li><b>ONNX_MODEL_PATH:</b> {ONNX_MODEL_PATH} (exists: {os.path.exists(ONNX_MODEL_PATH)})</li>"
+        f"</ul>"
+        f"</body></html>",
+        status_code=500
+    )
 
 
 if __name__ == "__main__":
