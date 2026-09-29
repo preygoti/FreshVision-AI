@@ -1,6 +1,6 @@
 """
 FastAPI Server for AI Fruit Freshness Detection System (FreshVision AI)
-Group 7 College Project — SCET
+AI-Powered Fruit Freshness Classification • SCET
 Dual-mode: Uses high-performance lightweight ONNX Runtime for serverless Vercel deployment
 and falls back to PyTorch if ONNX is not available.
 """
@@ -52,7 +52,7 @@ try:
 except ImportError:
     pass
 
-app = FastAPI(title="FreshVision AI", description="Group 7 College Capstone Project")
+app = FastAPI(title="FreshVision AI", description="AI-Powered Fruit Freshness Classification")
 
 
 class VercelPathMiddleware:

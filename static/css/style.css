@@ -2086,3 +2086,267 @@ ul {
         animation: none;
     }
 }
+
+/* ==========================================================================
+   Content Specification Extensions
+   ========================================================================== */
+
+.better-results-box {
+    background-color: var(--bg-subtle);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 0.85rem 1rem;
+    margin-top: 0.75rem;
+}
+
+.better-results-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-heading);
+    display: block;
+    margin-bottom: 0.4rem;
+}
+
+.better-results-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.model-scope-section {
+    padding: 4.5rem 0;
+    background-color: var(--bg-surface);
+}
+
+.scope-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.scope-box {
+    background-color: var(--bg-body);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.75rem 1.25rem;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.scope-box:hover {
+    transform: translateY(-2px);
+    border-color: var(--brand-primary);
+}
+
+.scope-box-num {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--brand-primary);
+    margin-bottom: 0.5rem;
+}
+
+.scope-box-val {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.about-card-container {
+    background-color: var(--bg-body);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2.25rem;
+    max-width: 860px;
+    margin: 0 auto;
+    box-shadow: var(--shadow-card);
+}
+
+.about-text-content p {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text-body);
+    margin-bottom: 1rem;
+}
+
+.about-text-content p:last-child {
+    margin-bottom: 0;
+}
+
+.about-project-scope-banner {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.scope-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.scope-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--brand-primary);
+}
+
+.scope-value {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-heading);
+    line-height: 1.4;
+}
+
+.final-cta-section {
+    padding: 5rem 0 3rem 0;
+    background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-body) 100%);
+}
+
+.cta-inner-card {
+    background: radial-gradient(circle at top right, rgba(5, 150, 105, 0.08) 0%, rgba(255, 255, 255, 0) 70%), var(--bg-body);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 3.5rem 2rem;
+    max-width: 860px;
+    margin: 0 auto;
+    box-shadow: var(--shadow-card);
+}
+
+.cta-headline {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--text-heading);
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.02em;
+}
+
+.cta-sub {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+    line-height: 1.6;
+}
+
+.cta-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.prediction-dyn-note {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin: 0.5rem 0 0 0;
+    text-align: right;
+}
+
+.ai-explanation-box {
+    background-color: var(--bg-subtle);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.explanation-box-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin-bottom: 0.4rem;
+}
+
+.explanation-box-text {
+    font-size: 0.82rem;
+    color: var(--text-body);
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+}
+
+.explanation-callout-warning {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    background-color: rgba(245, 158, 11, 0.08);
+    border-left: 3px solid #f59e0b;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin-top: 0.5rem;
+    line-height: 1.45;
+}
+
+.prob-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin-bottom: 0.25rem;
+}
+
+.prob-subtext {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+}
+
+.prob-footer-note {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+    font-style: italic;
+}
+
+.gradcam-description-text {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+    line-height: 1.4;
+}
+
+.gradcam-footer-caution {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.75rem;
+    padding: 0.4rem 0.6rem;
+    background-color: var(--bg-subtle);
+    border-radius: var(--radius-sm);
+    text-align: center;
+}
+
+.footer-academic-badge {
+    margin-top: 1rem;
+    display: inline-block;
+    padding: 0.3rem 0.75rem;
+    background-color: rgba(5, 150, 105, 0.08);
+    border: 1px solid rgba(5, 150, 105, 0.2);
+    border-radius: var(--radius-full);
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--brand-primary);
+}
+
+@media (max-width: 768px) {
+    .scope-summary-grid {
+        grid-template-columns: 1fr;
+    }
+    .about-project-scope-banner {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    .cta-headline {
+        font-size: 1.75rem;
+    }
+}
+
