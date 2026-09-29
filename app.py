@@ -54,15 +54,29 @@ except ImportError:
 
 app = FastAPI(title="FreshVision AI", description="Group 7 College Capstone Project")
 
+def resolve_path(*path_parts: str) -> str:
+    """Finds directory or file across cwd, script dir, parent dir, or /var/task."""
+    rel = os.path.join(*path_parts)
+    candidates = [
+        os.path.join(os.getcwd(), rel),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), rel),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", rel),
+        os.path.join("/var/task", rel),
+    ]
+    for candidate in candidates:
+        if os.path.exists(candidate):
+            return os.path.abspath(candidate)
+    return os.path.abspath(candidates[0])
+
 # Mount static and templates
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-STATIC_DIR = os.path.join(BASE_DIR, "static")
-TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
-MODELS_DIR = os.path.join(BASE_DIR, "models")
-ONNX_MODEL_PATH = os.path.join(MODELS_DIR, "fruit_classifier.onnx")
-MODEL_PATH = os.path.join(MODELS_DIR, "best_model.pt")
-FALLBACK_MODEL_PATH = os.path.join(MODELS_DIR, "fruit_classifier.pt")
-METRICS_PATH = os.path.join(MODELS_DIR, "class_metrics.json")
+STATIC_DIR = resolve_path("static")
+TEMPLATES_DIR = resolve_path("templates")
+MODELS_DIR = resolve_path("models")
+ONNX_MODEL_PATH = resolve_path("models", "fruit_classifier.onnx")
+MODEL_PATH = resolve_path("models", "best_model.pt")
+FALLBACK_MODEL_PATH = resolve_path("models", "fruit_classifier.pt")
+METRICS_PATH = resolve_path("models", "class_metrics.json")
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 
 os.makedirs(STATIC_DIR, exist_ok=True)
@@ -316,6 +330,18 @@ async def get_metrics():
             return JSONResponse(content=data)
     else:
         raise HTTPException(status_code=404, detail="Metrics have not been generated yet.")
+
+@app.get("/api/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "onnx_loaded": onnx_session is not None,
+        "torch_loaded": torch_model is not None,
+        "static_dir": os.path.exists(STATIC_DIR),
+        "templates_dir": os.path.exists(TEMPLATES_DIR),
+        "onnx_model_path": os.path.exists(ONNX_MODEL_PATH)
+    }
+
 
 if __name__ == "__main__":
     import uvicorn
