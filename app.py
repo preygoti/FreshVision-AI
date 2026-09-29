@@ -12,10 +12,9 @@ import json
 import numpy as np
 from PIL import Image
 from fastapi import FastAPI, File, UploadFile, Request, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from starlette.middleware.base import BaseHTTPMiddleware
+from urllib.parse import parse_qs
 
 # Class definitions
 CLASSES = [
@@ -62,15 +61,20 @@ class VercelPathMiddleware:
 
     async def __call__(self, scope, receive, send):
         if scope["type"] == "http":
-            path = scope.get("path", "")
-            headers = dict(scope.get("headers", []))
-            matched = headers.get(b"x-matched-path", b"").decode("utf-8", errors="ignore")
-            if matched and matched != "/api/index.py":
-                scope["path"] = matched
-            elif path in ("/api/index.py", "/api", "/api/"):
-                scope["path"] = "/"
-            elif path.startswith("/api/index.py/"):
-                scope["path"] = path[len("/api/index.py"):]
+            query_string = scope.get("query_string", b"").decode("utf-8", errors="ignore")
+            qs = parse_qs(query_string)
+            if "path" in qs and qs["path"][0]:
+                scope["path"] = "/" + qs["path"][0].lstrip("/")
+            else:
+                path = scope.get("path", "")
+                headers = dict(scope.get("headers", []))
+                matched = headers.get(b"x-matched-path", b"").decode("utf-8", errors="ignore")
+                if matched and matched != "/api/index.py":
+                    scope["path"] = matched
+                elif path in ("/api/index.py", "/api", "/api/"):
+                    scope["path"] = "/"
+                elif path.startswith("/api/index.py/"):
+                    scope["path"] = path[len("/api/index.py"):]
         await self.app(scope, receive, send)
 
 
@@ -320,6 +324,32 @@ def run_inference_on_pil(pil_img):
 @app.get("/api/index.py", response_class=HTMLResponse)
 async def home(request: Request = None):
     return HTMLResponse(content=get_index_html())
+
+
+@app.get("/static/css/style.css")
+async def get_css():
+    p = resolve_path("static", "css", "style.css")
+    if os.path.exists(p):
+        with open(p, "r", encoding="utf-8") as f:
+            return Response(content=f.read(), media_type="text/css")
+    return Response(content="", media_type="text/css")
+
+
+@app.get("/static/js/app.js")
+async def get_js():
+    p = resolve_path("static", "js", "app.js")
+    if os.path.exists(p):
+        with open(p, "r", encoding="utf-8") as f:
+            return Response(content=f.read(), media_type="application/javascript")
+    return Response(content="", media_type="application/javascript")
+
+
+@app.get("/static/{file_path:path}")
+async def serve_static_file(file_path: str):
+    p = resolve_path("static", *file_path.split("/"))
+    if os.path.isfile(p):
+        return FileResponse(p)
+    raise HTTPException(status_code=404, detail="Static asset not found")
 
 
 @app.post("/api/predict")
